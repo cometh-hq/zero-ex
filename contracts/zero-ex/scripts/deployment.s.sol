@@ -14,17 +14,21 @@ import "forge-std/console.sol";
 
 
 
+
 contract Deployement is Script {
+
+  address constant WETH = address(0x980B62Da83eFf3D4576C647993b0c1D7faf17c73);
+  address constant DEPLOYER = address(0x6e76Fdca84343Fc83DeF060CeA85c7Ab790189d8);
+  address constant ZERO_EX_OWNER = address(0xE3198781E730e0E46D6b4Be7Ce09812B29c99233);
+
   function run() external {
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     vm.startBroadcast(deployerPrivateKey);
 
-    IEtherToken weth = IEtherToken(
-      address(0x869Bf8814d77106323745758135b999D34C79a87)
-    );
+    IEtherToken weth = IEtherToken(WETH);
 
     InitialMigration initMigration = new InitialMigration(
-      address(0xF851b22255d30FA024433AAd8c9c0d32De413159)
+      DEPLOYER
     );
     ZeroEx zeroEx = new ZeroEx(address(initMigration));
 
@@ -39,7 +43,7 @@ contract Deployement is Script {
     );
 
     initMigration.initializeZeroEx(
-      payable(address(0xF851b22255d30FA024433AAd8c9c0d32De413159)),
+      payable(DEPLOYER),
       zeroEx,
       InitialMigration.BootstrapFeatures({
         registry: simpleFunc,
@@ -50,15 +54,15 @@ contract Deployement is Script {
     IZERO_EX.migrate(
       address(erc721Feat),
       abi.encodeWithSelector(0x8fd3ab80),
-      address(0xF851b22255d30FA024433AAd8c9c0d32De413159)
+      DEPLOYER
     );
 
     IZERO_EX.extend(0x01ffc9a7, address(erc165));
 
-    IZERO_EX.transferOwnership(
-      address(0xE3198781E730e0E46D6b4Be7Ce09812B29c99233)
-    );
-    console.log(IZERO_EX.owner());
+    // IZERO_EX.transferOwnership(
+    //   ZERO_EX_OWNER
+    // );
+    // console.log(IZERO_EX.owner());
 
     vm.stopBroadcast();
   }
